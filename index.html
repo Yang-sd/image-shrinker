@@ -1,0 +1,427 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>轻图 · 图片尺寸优化</title>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="./vendor/gifuct.js"></script>
+  <script src="./vendor/gif.js"></script>
+  <script src="./vendor/gif-worker-inline.js"></script>
+  <script src="./vendor/fflate.min.js"></script>
+  <style>
+    :root{--ink:#17202a;--muted:#6b7580;--line:#dfe5e8;--paper:#fbfcfb;--mint:#ccefe2;--green:#187a5a;--cream:#f4efe5;--coral:#e77b61}
+    *{box-sizing:border-box} body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .shell{max-width:1120px;margin:auto;padding:34px 28px 54px}.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:62px}.brand{display:flex;gap:11px;align-items:center;font-weight:760;font-size:19px;letter-spacing:-.02em}.mark{display:grid;place-items:center;width:33px;height:33px;border-radius:9px;background:var(--green);color:white}.mark svg{width:19px}.status{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px}.dot{width:7px;height:7px;border-radius:50%;background:#56bd8d}
+    .hero{display:grid;grid-template-columns:1.02fr .98fr;gap:64px;align-items:center;margin-bottom:56px}.eyebrow{color:var(--green);font-weight:700;font-size:12px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:17px}.hero h1{font-size:clamp(40px,5.6vw,67px);line-height:1.05;letter-spacing:-.065em;margin:0 0 20px;max-width:570px}.hero p{color:var(--muted);font-size:17px;max-width:490px;margin:0}.accent{color:var(--coral)}
+    .drop{border:1.5px dashed #b8c8c0;border-radius:16px;background:#f2faf5;min-height:285px;padding:25px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;transition:.2s}.drop.drag{border-color:var(--green);background:var(--mint);transform:translateY(-2px)}.drop-icon{display:grid;place-items:center;width:58px;height:58px;border-radius:17px;background:white;color:var(--green);margin-bottom:15px;box-shadow:0 8px 20px #3e927e18}.drop-icon svg{width:27px;height:27px}.drop h3{margin:0 0 6px;font-size:18px}.drop p{margin:0 0 19px;color:var(--muted);font-size:13px}.button{border:0;border-radius:9px;padding:11px 18px;display:inline-flex;align-items:center;gap:8px;background:var(--green);color:white;font:600 14px inherit;cursor:pointer}.button:hover{background:#126449}.button svg{width:16px}.formats{margin-top:16px;color:#84908a;font-size:12px}
+    .workspace{display:none;grid-template-columns:1fr 1fr;gap:22px}.workspace.show{display:grid}.panel{border:1px solid var(--line);border-radius:14px;background:white;padding:21px}.panel-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:17px}.panel h2{font-size:15px;margin:0}.tag{font-size:11px;color:var(--green);background:#e7f6ef;padding:4px 8px;border-radius:20px;font-weight:650}.preview{height:280px;border-radius:9px;background:repeating-conic-gradient(#f0f2f2 0 25%,#fafafa 0 50%) 50%/18px 18px;display:grid;place-items:center;overflow:hidden}.preview img{max-width:100%;max-height:100%;object-fit:contain}.meta{display:flex;justify-content:space-between;color:var(--muted);font-size:12px;margin-top:13px}.controls{display:grid;gap:14px}.control{display:grid;gap:6px}.control label{font-size:12px;color:var(--muted);display:flex;justify-content:space-between}.control input[type=number]{width:100%;border:1px solid var(--line);border-radius:8px;padding:10px;font:inherit;outline:none}.control input:focus{border-color:var(--green)}.dims{display:grid;grid-template-columns:1fr 1fr;gap:10px}.range{display:flex;gap:11px;align-items:center}.range input{flex:1;accent-color:var(--green)}.range b{font-size:13px;min-width:40px;text-align:right}.select{width:100%;border:1px solid var(--line);border-radius:8px;padding:10px;background:white;font:inherit}.check{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px}.check input{accent-color:var(--green);width:16px;height:16px}.process{width:100%;justify-content:center;margin-top:4px}.output{display:none;margin-top:22px;border-radius:13px;background:var(--cream);padding:18px 20px;align-items:center;justify-content:space-between;gap:18px}.output.show{display:flex}.output strong{display:block;font-size:14px}.output span{color:var(--muted);font-size:12px}.output .button{background:var(--ink);white-space:nowrap}.tip{display:flex;align-items:flex-start;gap:8px;color:var(--muted);font-size:12px;margin-top:16px}.tip svg{width:15px;color:var(--coral);flex:none;margin-top:2px}
+    footer{text-align:center;color:#9aa29f;font-size:12px;margin-top:58px}@media(max-width:780px){.shell{padding:23px 17px 40px}.top{margin-bottom:45px}.status{display:none}.hero{grid-template-columns:1fr;gap:28px;margin-bottom:34px}.hero h1{font-size:46px}.hero p{font-size:15px}.drop{min-height:240px}.workspace.show{grid-template-columns:1fr}.preview{height:235px}.output.show{align-items:flex-start;flex-direction:column}.output .button{width:100%;justify-content:center}}
+  </style>
+  <style>
+    .mode-switch{display:flex;width:max-content;margin:0 auto 22px;padding:4px;border:1px solid var(--line);border-radius:10px;background:white}
+    .mode-button{border:0;background:transparent;color:var(--muted);border-radius:7px;padding:9px 15px;display:flex;align-items:center;gap:7px;font:650 13px inherit;cursor:pointer}
+    .mode-button svg{width:15px;height:15px}.mode-button.active{background:var(--ink);color:white}.mode-pane.hidden{display:none}
+    .emoji-banner{display:flex;align-items:flex-start;gap:10px;padding:12px 13px;border:1px solid #eadfcd;border-radius:9px;background:#fffaf1;color:#6f6555;font-size:12px;line-height:1.6}
+    .emoji-banner svg{width:16px;height:16px;flex:none;color:var(--coral);margin-top:2px}.emoji-banner b{display:block;color:#453d31;font-size:13px}
+    .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.step{padding:9px 8px;border:1px solid var(--line);border-radius:8px;color:var(--muted);font-size:11px;text-align:center}.step b{display:block;color:var(--green);font-size:12px}
+    .chat-note{display:flex;gap:10px;max-width:760px;margin:18px auto 0;padding:13px 16px;border:1px solid #e4e0d8;border-radius:10px;background:#fffaf0;color:#766f62;font-size:12px;line-height:1.65}.chat-note svg{width:16px;height:16px;flex:none;color:var(--coral);margin-top:3px}.chat-note b{color:#514a3e}
+    .output-copy{display:flex;align-items:center;gap:13px}.result-thumb{display:none;width:52px;height:52px;object-fit:contain;background:repeating-conic-gradient(#e9eceb 0 25%,#fafafa 0 50%) 50%/10px 10px;border:1px solid #ddd8ce;border-radius:7px}.output.show .result-thumb{display:block}
+    @media(max-width:780px){.mode-switch{width:100%}.mode-button{flex:1;justify-content:center}.steps{grid-template-columns:1fr}.output-copy{align-items:flex-start}}
+  </style>
+  <style>
+    .drop-actions{display:flex;gap:9px;flex-wrap:wrap;justify-content:center}.button.secondary{border:1px solid #b9d1c6;background:white;color:var(--green)}.button.secondary:hover{background:#e8f6ef}.button:disabled{opacity:.58;cursor:not-allowed}.button svg{height:16px}
+    .panel-head-title{display:flex;align-items:center;gap:9px}.panel-actions{display:flex;gap:7px}.icon-button{width:34px;height:34px;padding:0;border:1px solid var(--line);border-radius:8px;background:white;color:var(--muted);display:grid;place-items:center;cursor:pointer}.icon-button:hover{border-color:#aac8ba;color:var(--green);background:#f3faf6}.icon-button svg{width:16px;height:16px}
+    .queue{margin-top:14px;border-top:1px solid var(--line);padding-top:11px}.queue-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;color:var(--muted);font-size:11px}.queue-list{display:grid;gap:4px;max-height:188px;overflow:auto;padding-right:3px}.queue-row{display:grid;grid-template-columns:minmax(0,1fr) 30px;gap:5px;align-items:center;border-radius:8px}.queue-row.active{background:#edf7f2}.queue-select{min-width:0;border:0;background:transparent;padding:7px;display:grid;grid-template-columns:38px minmax(0,1fr) auto;gap:9px;align-items:center;text-align:left;cursor:pointer;color:inherit}.queue-thumb{width:38px;height:38px;border:1px solid var(--line);border-radius:6px;background:repeating-conic-gradient(#eef1f0 0 25%,#fafafa 0 50%) 50%/8px 8px;object-fit:contain}.queue-copy{min-width:0}.queue-name{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;font-weight:650}.queue-meta{display:block;color:var(--muted);font-size:10px}.queue-state{font-size:10px;color:var(--muted);white-space:nowrap}.queue-state.done{color:var(--green)}.queue-state.error{color:#b5483d}.remove-file{width:28px;height:28px;border:0;background:transparent;color:#9aa29f;border-radius:7px;display:grid;place-items:center;cursor:pointer}.remove-file:hover{background:#fff0ed;color:#b5483d}.remove-file svg{width:14px;height:14px}
+    .fit-note{font-size:11px;color:var(--muted);margin-top:-3px}.batch-output{display:none;margin-top:22px}.batch-output.show{display:block}.results-head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:17px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}.results-summary strong{display:block;font-size:15px}.results-summary span{display:block;color:var(--muted);font-size:12px;margin-top:2px}.results-actions{display:flex;gap:8px}.progress-track{display:none;height:5px;background:#e5ebe8;margin-top:12px;overflow:hidden;border-radius:3px}.progress-track.show{display:block}.progress-bar{height:100%;width:0;background:var(--green);transition:width .2s}.result-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:14px}.result-card{display:grid;grid-template-columns:58px minmax(0,1fr) 34px;gap:11px;align-items:center;border:1px solid var(--line);border-radius:8px;background:white;padding:10px}.result-image{width:58px;height:58px;border-radius:6px;border:1px solid var(--line);object-fit:contain;background:repeating-conic-gradient(#eef1f0 0 25%,#fafafa 0 50%) 50%/8px 8px}.result-copy{min-width:0}.result-name{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;font-weight:650}.result-meta{display:block;color:var(--muted);font-size:10px;margin-top:3px}.result-error{color:#b5483d;font-size:11px}.batch-hint{margin-top:9px;color:var(--muted);font-size:11px}
+    @media(max-width:900px){.result-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:780px){.drop-actions{width:100%}.drop-actions .button{flex:1;justify-content:center}.panel-actions{gap:5px}.result-grid{grid-template-columns:1fr}.results-head{align-items:flex-start;flex-direction:column}.results-actions{width:100%}.results-actions .button{flex:1;justify-content:center}.queue-list{max-height:230px}}
+  </style>
+</head>
+<body>
+<main class="shell">
+  <header class="top"><div class="brand"><span class="mark"><i data-lucide="scan-line"></i></span>轻图</div><div class="status"><span class="dot"></span>本地处理 · 文件不会上传</div></header>
+  <section class="hero"><div><div class="eyebrow">Image size, made lighter</div><h1>让图片更轻，<br><span class="accent">聊天更自在。</span></h1><p>调整图片的显示尺寸，保留清晰度与 GIF 动画。所有处理都在你的浏览器本地完成。</p></div><div id="drop" class="drop"><div class="drop-icon"><i data-lucide="images"></i></div><h3>拖入图片或文件夹到这里</h3><p>支持 JPG、PNG、WEBP 和 GIF，可一次处理多张</p><div class="drop-actions"><button id="choose" class="button"><i data-lucide="images"></i>选择图片</button><button id="chooseFolder" class="button secondary"><i data-lucide="folder-open"></i>选择文件夹</button></div><input id="file" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple hidden><input id="folder" type="file" accept="image/jpeg,image/png,image/webp,image/gif" webkitdirectory directory multiple hidden><div class="formats">每张最大 50 MB · 文件只在本地处理</div></div></section>
+  <div class="mode-switch" aria-label="处理模式"><button class="mode-button active" data-mode="resize"><i data-lucide="scan"></i>普通缩放</button><button class="mode-button" data-mode="emoji"><i data-lucide="sticker"></i>聊天工具小表情</button></div>
+  <section id="workspace" class="workspace">
+    <div class="panel"><div class="panel-head"><div class="panel-head-title"><h2>待处理图片</h2><span id="selectedCount" class="tag">1 张</span></div><div class="panel-actions"><button id="addImages" class="icon-button" title="添加图片" aria-label="添加图片"><i data-lucide="image-plus"></i></button><button id="addFolder" class="icon-button" title="添加文件夹" aria-label="添加文件夹"><i data-lucide="folder-plus"></i></button><button id="clearFiles" class="icon-button" title="清空列表" aria-label="清空列表"><i data-lucide="trash-2"></i></button></div></div><div class="preview"><img id="sourcePreview" alt="当前图片预览"></div><div class="meta"><span id="sourceSize">—</span><span id="sourceWeight">—</span></div><div class="queue"><div class="queue-head"><span>图片列表</span><span id="queueSummary">—</span></div><div id="queueList" class="queue-list"></div></div></div>
+    <div class="panel"><div class="panel-head"><h2 id="settingsTitle">缩放设置</h2><span id="ratioTag" class="tag">等比缩放</span></div>
+      <div id="resizeControls" class="controls mode-pane"><div class="control"><label>当前图宽度比例 <b id="ratioValue">60%</b></label><div class="range"><input id="ratio" type="range" min="1" max="100" value="60"><b id="ratioNum">60%</b></div></div><div class="control"><label>统一目标尺寸 <span>像素</span></label><div class="dims"><input id="width" type="number" min="1" max="16384" placeholder="宽度"><input id="height" type="number" min="1" max="16384" placeholder="高度"></div><div class="fit-note">整批图片都会生成相同的宽度和高度</div></div><label class="check"><input id="keep" type="checkbox" checked>按当前预览图锁定宽高比例</label><div class="control"><label>图片适配</label><select id="fit" class="select"><option value="contain" selected>完整显示 · 不裁切</option><option value="cover">铺满画布 · 可能裁切</option><option value="stretch">拉伸到统一尺寸</option></select></div><div class="control"><label>输出格式</label><select id="format" class="select"><option value="auto">自动匹配原格式</option><option value="png">PNG · 无损</option><option value="jpeg">JPG · 更小体积</option><option value="webp">WEBP · 推荐</option></select></div></div>
+      <div id="emojiControls" class="controls mode-pane hidden"><div class="emoji-banner"><i data-lucide="message-circle-heart"></i><span><b>生成可添加到聊天工具的单个表情</b>使用正方形画布包住原图，不裁切内容。添加为表情后，聊天工具会使用表情消息的较小显示方式。</span></div><div class="control"><label>表情画布 <span>推荐 100 × 100</span></label><select id="emojiSize" class="select"><option value="80">80 × 80 px · 更小</option><option value="100" selected>100 × 100 px · 推荐</option><option value="120">120 × 120 px</option><option value="240">240 × 240 px · 更清晰</option></select></div><div class="control"><label>主体大小 <b id="subjectValue">88%</b></label><div class="range"><input id="subjectScale" type="range" min="40" max="100" value="88"><b id="subjectNum">88%</b></div></div><div class="control"><label>画布背景</label><select id="emojiBg" class="select"><option value="transparent">透明背景 · 推荐</option><option value="white">白色背景</option></select></div><div class="control"><label>输出格式</label><select id="emojiFormat" class="select"><option value="gif" selected>GIF · 模拟示例小图</option><option value="png">PNG · 保留更多色彩</option></select></div><div class="steps"><div class="step"><b>1. 下载</b>生成的小表情</div><div class="step"><b>2. 打开聊天工具</b>进入表情面板</div><div class="step"><b>3. 点击“+”</b>添加单个表情</div></div></div>
+      <button id="process" class="button process"><i data-lucide="wand-sparkles"></i><span id="processLabel">生成缩小图片</span></button><div class="tip"><i data-lucide="shield-check"></i><span id="tipText">GIF 会保留动画；静态图片按原格式导出，像素内容不会被裁切。</span></div>
+    </div>
+  </section>
+  <section id="output" class="batch-output"><div class="results-head"><div class="results-summary"><strong id="outputTitle">图片已准备好</strong><span id="outputMeta">—</span></div><div class="results-actions"><button id="downloadAll" class="button"><i data-lucide="file-archive"></i>下载全部 ZIP</button></div></div><div id="progressTrack" class="progress-track"><div id="progressBar" class="progress-bar"></div></div><div id="resultGrid" class="result-grid"></div><div class="batch-hint">可以单独下载某一张，也可以将全部成功结果打包下载。</div></section>
+  <div class="chat-note"><i data-lucide="message-circle-more"></i><span id="chatNote"><b>关于聊天窗口的显示：</b>普通图片由聊天工具决定气泡大小。若要稳定显示得更小，请切换到“聊天工具小表情”并从表情面板发送。</span></div><footer>轻图 · 你的图片只属于你</footer>
+</main>
+<script>
+  const $=id=>document.getElementById(id);
+  const MAX_FILE_SIZE=50*1024*1024;
+  const SUPPORTED_TYPES=new Set(['image/jpeg','image/png','image/webp','image/gif']);
+  let imageItems=[],activeId=null,mode='resize',processing=false,itemSequence=0,gifWorkerBlobUrl=null;
+  const refreshIcons=()=>window.lucide&&window.lucide.createIcons();
+  const getGifWorkerScript=()=>gifWorkerBlobUrl||(gifWorkerBlobUrl=URL.createObjectURL(new Blob([window.GIF_WORKER_SOURCE],{type:'text/javascript'})));
+  refreshIcons();
+
+  $('choose').onclick=()=>$('file').click();
+  $('chooseFolder').onclick=()=>$('folder').click();
+  $('addImages').onclick=()=>$('file').click();
+  $('addFolder').onclick=()=>$('folder').click();
+  $('clearFiles').onclick=clearFiles;
+  $('file').onchange=async event=>{await addFiles([...event.target.files].map(file=>({file,path:file.name})));event.target.value=''};
+  $('folder').onchange=async event=>{await addFiles([...event.target.files].map(file=>({file,path:file.webkitRelativePath||file.name})));event.target.value=''};
+
+  const drop=$('drop');
+  ['dragenter','dragover'].forEach(type=>drop.addEventListener(type,event=>{event.preventDefault();drop.classList.add('drag')}));
+  ['dragleave','drop'].forEach(type=>drop.addEventListener(type,event=>{event.preventDefault();drop.classList.remove('drag')}));
+  drop.addEventListener('drop',async event=>{if(processing)return;await addFiles(await filesFromDrop(event.dataTransfer))});
+
+  document.querySelectorAll('.mode-button').forEach(button=>button.addEventListener('click',()=>setMode(button.dataset.mode)));
+  function setMode(next){
+    if(processing||next===mode)return;
+    mode=next;
+    clearResults();
+    document.querySelectorAll('.mode-button').forEach(button=>button.classList.toggle('active',button.dataset.mode===mode));
+    $('resizeControls').classList.toggle('hidden',mode!=='resize');
+    $('emojiControls').classList.toggle('hidden',mode!=='emoji');
+    $('chatNote').innerHTML=mode==='emoji'?'<b>发送方式很重要：</b>下载后进入聊天工具“表情面板 → + → 添加的单个表情”，再从表情面板发送。直接拖入聊天框仍可能被当成普通图片放大。':'<b>关于聊天窗口的显示：</b>普通图片由聊天工具决定气泡大小。若要稳定显示得更小，请切换到“聊天工具小表情”并从表情面板发送。';
+    if(imageItems.length)renderQueue();
+    updateModeText();
+    refreshIcons();
+  }
+
+  function updateModeText(){
+    const batch=imageItems.length>1;
+    $('settingsTitle').textContent=mode==='emoji'?'聊天工具小表情设置':batch?'批量缩放设置':'缩放设置';
+    $('ratioTag').textContent=mode==='emoji'?'表情消息':batch?'统一尺寸':'等比缩放';
+    $('processLabel').textContent=mode==='emoji'?(batch?'批量生成小表情':'生成聊天工具小表情'):(batch?'生成全部图片':'生成缩小图片');
+    $('tipText').textContent=mode==='emoji'?'整批图片会生成相同尺寸；静态图片按所选格式导出，动画 GIF 会保持动画。':'整批图片会输出为相同尺寸；GIF 会保留动画，图片按所选方式适配画布。';
+  }
+
+  async function filesFromDrop(dataTransfer){
+    const entries=[...(dataTransfer.items||[])].filter(item=>item.kind==='file').map(item=>item.webkitGetAsEntry&&item.webkitGetAsEntry()).filter(Boolean);
+    if(!entries.length)return[...(dataTransfer.files||[])].map(file=>({file,path:file.name}));
+    const groups=await Promise.all(entries.map(entry=>readEntry(entry,'')));
+    return groups.flat();
+  }
+
+  async function readEntry(entry,parentPath){
+    if(entry.isFile){
+      const file=await new Promise((resolve,reject)=>entry.file(resolve,reject));
+      return[{file,path:parentPath+file.name}];
+    }
+    if(!entry.isDirectory)return[];
+    const directoryPath=parentPath+entry.name+'/';
+    const reader=entry.createReader(),children=[];
+    while(true){
+      const batch=await new Promise((resolve,reject)=>reader.readEntries(resolve,reject));
+      if(!batch.length)break;
+      children.push(...batch);
+    }
+    const groups=await Promise.all(children.map(child=>readEntry(child,directoryPath)));
+    return groups.flat();
+  }
+
+  function isSupportedImage(file){return SUPPORTED_TYPES.has(file.type)||/\.(gif|png|jpe?g|webp)$/i.test(file.name)}
+  async function addFiles(descriptors){
+    if(processing||!descriptors.length)return;
+    const existing=new Set(imageItems.map(item=>item.key));
+    const additions=[];
+    let unsupported=0,oversized=0,unreadable=0,duplicate=0;
+    for(const descriptor of descriptors){
+      const file=descriptor.file,path=descriptor.path||file.name,key=path+'|'+file.size+'|'+file.lastModified;
+      if(!isSupportedImage(file)){unsupported++;continue}
+      if(file.size>MAX_FILE_SIZE){oversized++;continue}
+      if(existing.has(key)){duplicate++;continue}
+      let sourceUrl;
+      try{
+        const actualType=await detectImageType(file);
+        if(!SUPPORTED_TYPES.has(actualType)){unsupported++;continue}
+        sourceUrl=URL.createObjectURL(file);
+        const dimensions=await dimensionsFromUrl(sourceUrl);
+        const item={id:'image-'+(++itemSequence),key,file,path,actualType,sourceUrl,width:dimensions.width,height:dimensions.height,status:'pending',error:'',resultBlob:null,resultUrl:null,resultName:'',resultWidth:0,resultHeight:0};
+        additions.push(item);existing.add(key);
+      }catch(error){if(sourceUrl)URL.revokeObjectURL(sourceUrl);unreadable++}
+    }
+    if(!additions.length){
+      const reason=oversized?'图片超过 50 MB，无法加入。':duplicate?'这些图片已经在列表中。':'没有识别到可处理的 JPG、PNG、WEBP 或 GIF 图片。';
+      alert(reason);
+      return;
+    }
+    const wasEmpty=!imageItems.length;
+    clearResults();
+    imageItems.push(...additions);
+    if(wasEmpty){
+      activeId=additions[0].id;
+      const ratio=+$('ratio').value;
+      $('width').value=Math.max(1,Math.round(additions[0].width*ratio/100));
+      $('height').value=Math.max(1,Math.round(additions[0].height*ratio/100));
+    }
+    $('workspace').classList.add('show');
+    renderWorkspace();
+    const failed=oversized+unreadable;
+    if(failed)alert('已加入 '+additions.length+' 张图片，另有 '+failed+' 张因文件过大或无法读取被跳过。');
+  }
+
+  function dimensionsFromUrl(url){return new Promise((resolve,reject)=>{const image=new Image();image.onload=()=>resolve({width:image.naturalWidth,height:image.naturalHeight});image.onerror=()=>reject(new Error('图片解码失败'));image.src=url})}
+  async function detectImageType(file){
+    const bytes=new Uint8Array(await file.slice(0,12).arrayBuffer());
+    if(bytes[0]===0x47&&bytes[1]===0x49&&bytes[2]===0x46&&bytes[3]===0x38)return'image/gif';
+    if(bytes[0]===0x89&&bytes[1]===0x50&&bytes[2]===0x4e&&bytes[3]===0x47)return'image/png';
+    if(bytes[0]===0xff&&bytes[1]===0xd8&&bytes[2]===0xff)return'image/jpeg';
+    if(bytes[0]===0x52&&bytes[1]===0x49&&bytes[2]===0x46&&bytes[8]===0x57&&bytes[9]===0x45&&bytes[10]===0x42&&bytes[11]===0x50)return'image/webp';
+    return file.type;
+  }
+
+  function activeItem(){return imageItems.find(item=>item.id===activeId)||imageItems[0]}
+  function renderWorkspace(){
+    if(!imageItems.length){$('workspace').classList.remove('show');return}
+    const current=activeItem();
+    if(!activeId)activeId=current.id;
+    $('sourcePreview').src=current.sourceUrl;
+    $('sourceSize').textContent=current.width+' × '+current.height+' px · '+typeLabel(current.actualType);
+    $('sourceWeight').textContent=fmt(current.file.size);
+    $('selectedCount').textContent=imageItems.length+' 张';
+    $('queueSummary').textContent='合计 '+fmt(imageItems.reduce((total,item)=>total+item.file.size,0));
+    renderQueue();
+    syncRatioFromTarget();
+    updateModeText();
+  }
+
+  function renderQueue(){
+    const list=$('queueList');list.replaceChildren();
+    const labels={pending:'待处理',processing:'处理中',done:'已完成',error:'失败'};
+    imageItems.forEach(item=>{
+      const row=document.createElement('div');row.className='queue-row'+(item.id===activeId?' active':'');
+      const select=document.createElement('button');select.type='button';select.className='queue-select';select.onclick=()=>selectItem(item.id);
+      const thumb=document.createElement('img');thumb.className='queue-thumb';thumb.src=item.sourceUrl;thumb.alt='';
+      const copy=document.createElement('span');copy.className='queue-copy';
+      const name=document.createElement('span');name.className='queue-name';name.textContent=item.path;
+      const meta=document.createElement('span');meta.className='queue-meta';meta.textContent=item.width+' × '+item.height+' · '+fmt(item.file.size);
+      copy.append(name,meta);
+      const state=document.createElement('span');state.className='queue-state '+item.status;state.textContent=labels[item.status];
+      select.append(thumb,copy,state);
+      const remove=document.createElement('button');remove.type='button';remove.className='remove-file';remove.title='移除图片';remove.setAttribute('aria-label','移除 '+item.file.name);remove.disabled=processing;remove.innerHTML='<i data-lucide="x"></i>';remove.onclick=()=>removeItem(item.id);
+      row.append(select,remove);list.append(row);
+    });
+    refreshIcons();
+  }
+
+  function selectItem(id){
+    if(!imageItems.some(item=>item.id===id))return;
+    activeId=id;
+    renderWorkspace();
+  }
+
+  function removeItem(id){
+    if(processing)return;
+    const index=imageItems.findIndex(item=>item.id===id);if(index<0)return;
+    clearResults();
+    const [removed]=imageItems.splice(index,1);URL.revokeObjectURL(removed.sourceUrl);
+    if(activeId===id)activeId=(imageItems[index]||imageItems[index-1]||{}).id||null;
+    if(!imageItems.length){clearFiles();return}
+    renderWorkspace();
+  }
+
+  function clearFiles(){
+    if(processing)return;
+    clearResults();
+    imageItems.forEach(item=>URL.revokeObjectURL(item.sourceUrl));
+    imageItems=[];activeId=null;
+    $('sourcePreview').removeAttribute('src');
+    $('queueList').replaceChildren();
+    $('workspace').classList.remove('show');
+    updateModeText();
+  }
+
+  function clearResults(){
+    imageItems.forEach(item=>{
+      if(item.resultUrl)URL.revokeObjectURL(item.resultUrl);
+      item.status='pending';item.error='';item.resultBlob=null;item.resultUrl=null;item.resultName='';item.resultWidth=0;item.resultHeight=0;
+    });
+    $('resultGrid').replaceChildren();
+    $('output').classList.remove('show');
+    $('progressTrack').classList.remove('show');
+    $('progressBar').style.width='0%';
+  }
+
+  function invalidateResults(){if(imageItems.some(item=>item.status!=='pending'||item.resultUrl)){clearResults();renderQueue()}}
+  function syncRatioFromTarget(){
+    const item=activeItem();if(!item)return;
+    const ratio=Math.max(1,Math.round((+$('width').value||item.width)/item.width*100)),sliderMax=Math.max(100,Math.ceil(ratio/100)*100);
+    $('ratio').max=sliderMax;$('ratio').value=ratio;$('ratioValue').textContent=ratio+'%';$('ratioNum').textContent=ratio+'%';
+  }
+
+  $('ratio').oninput=event=>{
+    const item=activeItem(),value=+event.target.value;if(!item)return;
+    $('ratioValue').textContent=value+'%';$('ratioNum').textContent=value+'%';
+    $('width').value=Math.max(1,Math.round(item.width*value/100));
+    $('height').value=Math.max(1,Math.round(item.height*value/100));
+    invalidateResults();
+  };
+  $('width').oninput=()=>{const item=activeItem();if(!item)return;if($('keep').checked)$('height').value=Math.max(1,Math.round((+$('width').value||1)*item.height/item.width));syncRatioFromTarget();invalidateResults()};
+  $('height').oninput=()=>{const item=activeItem();if(!item)return;if($('keep').checked)$('width').value=Math.max(1,Math.round((+$('height').value||1)*item.width/item.height));syncRatioFromTarget();invalidateResults()};
+  $('keep').onchange=()=>{const item=activeItem();if(item&&$('keep').checked)$('height').value=Math.max(1,Math.round((+$('width').value||1)*item.height/item.width));syncRatioFromTarget();invalidateResults()};
+  $('subjectScale').oninput=event=>{$('subjectValue').textContent=event.target.value+'%';$('subjectNum').textContent=event.target.value+'%';invalidateResults()};
+  ['fit','format','emojiSize','emojiBg','emojiFormat'].forEach(id=>$(id).addEventListener('change',invalidateResults));
+
+  $('process').onclick=processAll;
+  async function processAll(){
+    if(processing||!imageItems.length)return;
+    const config=readConfig();if(!config)return;
+    clearResults();processing=true;setBusy(true);
+    $('output').classList.add('show');$('progressTrack').classList.add('show');
+    $('outputTitle').textContent='正在处理 0 / '+imageItems.length;
+    $('outputMeta').textContent='图片在浏览器本地逐张生成，请保持当前页面打开。';
+    let completed=0;
+    for(const item of imageItems){
+      item.status='processing';renderQueue();
+      await new Promise(resolve=>requestAnimationFrame(resolve));
+      try{
+        const result=await processItem(item,config);
+        item.resultBlob=result.blob;item.resultUrl=URL.createObjectURL(result.blob);item.resultWidth=config.width;item.resultHeight=config.height;
+        const stem=item.file.name.replace(/\.[^.]+$/,'');
+        item.resultName=(config.emoji?'聊天工具小表情-':'轻图-')+stem+'.'+result.extension;
+        item.status='done';
+      }catch(error){console.error(error);item.status='error';item.error=error.message||'处理失败'}
+      completed++;
+      $('progressBar').style.width=Math.round(completed/imageItems.length*100)+'%';
+      $('outputTitle').textContent='正在处理 '+completed+' / '+imageItems.length;
+      renderQueue();renderResults();
+    }
+    processing=false;setBusy(false);finishSummary(config);
+  }
+
+  function readConfig(){
+    const emoji=mode==='emoji',size=+$('emojiSize').value;
+    const width=emoji?size:Math.round(+$('width').value),height=emoji?size:Math.round(+$('height').value);
+    if(!width||!height||width<1||height<1){alert('请输入有效的目标宽度和高度');return null}
+    if(width>16384||height>16384){alert('目标尺寸不能超过 16384 × 16384 px');return null}
+    return{emoji,width,height,scale:+$('subjectScale').value/100,bg:$('emojiBg').value,emojiFormat:$('emojiFormat').value,fit:$('fit').value,format:$('format').value};
+  }
+
+  async function processItem(item,config){
+    let blob,extension;
+    if(config.emoji){
+      if(item.actualType==='image/gif'){blob=await resizeGif(item.file,config.width,config.height,{fit:'contain',scale:config.scale,bg:config.bg});extension='gif'}
+      else if(config.emojiFormat==='gif'){blob=await makeStaticGif(item.file,config.width,config.scale,config.bg);extension='gif'}
+      else{blob=await makeStaticEmoji(item.file,config.width,config.scale,config.bg);extension='png'}
+    }else if(item.actualType==='image/gif'){
+      blob=await resizeGif(item.file,config.width,config.height,{fit:config.fit,scale:1,bg:'transparent'});extension='gif';
+    }else{
+      blob=await resizeStatic(item,config.width,config.height,config.fit,config.format);extension=extensionForType(blob.type);
+    }
+    return{blob,extension};
+  }
+
+  function setBusy(busy){
+    $('process').disabled=busy;$('downloadAll').disabled=busy;
+    ['choose','chooseFolder','addImages','addFolder','clearFiles'].forEach(id=>$(id).disabled=busy);
+    document.querySelectorAll('.mode-button').forEach(button=>button.disabled=busy);
+    if(busy)$('processLabel').textContent='正在批量处理…';else updateModeText();
+  }
+
+  function finishSummary(config){
+    const successful=imageItems.filter(item=>item.status==='done'),failed=imageItems.length-successful.length;
+    const outputBytes=successful.reduce((total,item)=>total+item.resultBlob.size,0);
+    $('progressTrack').classList.remove('show');
+    $('outputTitle').textContent=failed?successful.length+' 张完成，'+failed+' 张失败':successful.length+' 张图片已准备好';
+    $('outputMeta').textContent=config.width+' × '+config.height+' px · 输出合计 '+fmt(outputBytes);
+    $('downloadAll').disabled=!successful.length;
+    $('downloadAll').innerHTML='<i data-lucide="file-archive"></i>下载全部 ZIP';
+    renderResults();refreshIcons();
+  }
+
+  function renderResults(){
+    const grid=$('resultGrid');grid.replaceChildren();
+    imageItems.filter(item=>item.status==='done'||item.status==='error').forEach(item=>{
+      const card=document.createElement('article');card.className='result-card';
+      const image=document.createElement('img');image.className='result-image';image.src=item.resultUrl||item.sourceUrl;image.alt='';
+      const copy=document.createElement('div');copy.className='result-copy';
+      const name=document.createElement('span');name.className='result-name';name.textContent=item.status==='done'?item.resultName:item.file.name;
+      const meta=document.createElement('span');meta.className=item.status==='done'?'result-meta':'result-error';meta.textContent=item.status==='done'?item.resultWidth+' × '+item.resultHeight+' · '+fmt(item.resultBlob.size):item.error;
+      copy.append(name,meta);card.append(image,copy);
+      if(item.status==='done'){
+        const download=document.createElement('button');download.type='button';download.className='icon-button';download.title='下载这张图片';download.setAttribute('aria-label','下载 '+item.resultName);download.innerHTML='<i data-lucide="download"></i>';download.onclick=()=>downloadBlob(item.resultBlob,item.resultName);card.append(download);
+      }
+      grid.append(card);
+    });
+    refreshIcons();
+  }
+
+  $('downloadAll').onclick=async()=>{
+    const successful=imageItems.filter(item=>item.status==='done');if(!successful.length)return;
+    if(!window.fflate){alert('ZIP 组件没有加载，请刷新页面后重试');return}
+    const button=$('downloadAll');button.disabled=true;button.innerHTML='<i data-lucide="loader-circle"></i>正在打包…';refreshIcons();
+    try{
+      const archive={},usedNames=new Set();
+      for(const item of successful){
+        const directory=normalizedDirectory(item.path),name=uniqueArchiveName(directory+item.resultName,usedNames);
+        archive[name]=new Uint8Array(await item.resultBlob.arrayBuffer());
+      }
+      const zipped=await new Promise((resolve,reject)=>window.fflate.zip(archive,{level:0},(error,data)=>error?reject(error):resolve(data)));
+      downloadBlob(new Blob([zipped],{type:'application/zip'}),'轻图-批量结果.zip');
+    }catch(error){console.error(error);alert('打包失败：'+(error.message||'请重试'))}
+    button.disabled=false;button.innerHTML='<i data-lucide="file-archive"></i>下载全部 ZIP';refreshIcons();
+  };
+
+  function normalizedDirectory(path){const parts=path.replace(/\\/g,'/').split('/').filter(part=>part&&part!=='.'&&part!=='..');parts.pop();return parts.length?parts.join('/')+'/':''}
+  function uniqueArchiveName(name,used){
+    if(!used.has(name)){used.add(name);return name}
+    const dot=name.lastIndexOf('.'),base=dot>name.lastIndexOf('/')?name.slice(0,dot):name,extension=dot>name.lastIndexOf('/')?name.slice(dot):'';
+    let number=2,candidate;do{candidate=base+'-'+number+++extension}while(used.has(candidate));used.add(candidate);return candidate;
+  }
+  function downloadBlob(blob,name){const url=URL.createObjectURL(blob),anchor=document.createElement('a');anchor.href=url;anchor.download=name;document.body.append(anchor);anchor.click();anchor.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)}
+  function typeLabel(type){return(type.split('/')[1]||'图片').toUpperCase().replace('JPEG','JPG')}
+  function fmt(bytes){return bytes<1024*1024?(bytes/1024).toFixed(1)+' KB':(bytes/1024/1024).toFixed(2)+' MB'}
+  function extensionForType(type){return type==='image/jpeg'?'jpg':type==='image/webp'?'webp':type==='image/gif'?'gif':'png'}
+  function imageFromFile(file){return new Promise((resolve,reject)=>{const image=new Image(),url=URL.createObjectURL(file);image.onload=()=>{URL.revokeObjectURL(url);resolve(image)};image.onerror=()=>{URL.revokeObjectURL(url);reject(new Error('图片解码失败'))};image.src=url})}
+  function canvasBlob(canvas,type,quality){return new Promise((resolve,reject)=>canvas.toBlob(blob=>blob?resolve(blob):reject(new Error('图片导出失败')),type,quality))}
+
+  async function resizeStatic(item,width,height,fit,selectedFormat){
+    const image=await imageFromFile(item.file),canvas=document.createElement('canvas'),context=canvas.getContext('2d');canvas.width=width;canvas.height=height;
+    const type=selectedFormat==='jpeg'?'image/jpeg':selectedFormat==='webp'?'image/webp':selectedFormat==='png'?'image/png':item.actualType;
+    drawFitted(image,context,width,height,{fit,scale:1,bg:type==='image/jpeg'?'white':'transparent'});
+    return canvasBlob(canvas,type,.94);
+  }
+
+  async function makeStaticEmoji(file,size,scale,bg){
+    const image=await imageFromFile(file),canvas=document.createElement('canvas'),context=canvas.getContext('2d');canvas.width=size;canvas.height=size;drawFitted(image,context,size,size,{fit:'contain',scale,bg});return canvasBlob(canvas,'image/png');
+  }
+
+  async function makeStaticGif(file,size,scale,bg){
+    if(!window.GIF)throw new Error('GIF 组件没有加载，请刷新页面后重试');
+    const image=await imageFromFile(file),canvas=document.createElement('canvas'),context=canvas.getContext('2d'),transparent=bg!=='white';canvas.width=size;canvas.height=size;drawFitted(image,context,size,size,{fit:'contain',scale,bg,gifMatte:transparent});
+    const gif=new window.GIF({workers:1,quality:8,width:size,height:size,transparent:transparent?0x00ff01:null,workerScript:getGifWorkerScript()});gif.addFrame(context,{copy:true,delay:1000});return new Promise((resolve,reject)=>{gif.on('finished',resolve);gif.on('abort',()=>reject(new Error('GIF 编码已中止')));gif.render()});
+  }
+
+  function drawFitted(source,context,width,height,options){
+    context.clearRect(0,0,width,height);if(options.gifMatte)context.fillStyle='#00ff01';else if(options.bg==='white')context.fillStyle='#fff';else context.fillStyle='rgba(0,0,0,0)';context.fillRect(0,0,width,height);context.imageSmoothingEnabled=true;context.imageSmoothingQuality='high';
+    if(options.fit==='stretch'){context.drawImage(source,0,0,width,height);return}
+    const sourceWidth=source.naturalWidth||source.width,sourceHeight=source.naturalHeight||source.height;
+    const maxWidth=width*options.scale,maxHeight=height*options.scale,ratio=options.fit==='cover'?Math.max(maxWidth/sourceWidth,maxHeight/sourceHeight):Math.min(maxWidth/sourceWidth,maxHeight/sourceHeight);
+    const drawWidth=Math.max(1,Math.round(sourceWidth*ratio)),drawHeight=Math.max(1,Math.round(sourceHeight*ratio));context.drawImage(source,Math.round((width-drawWidth)/2),Math.round((height-drawHeight)/2),drawWidth,drawHeight);
+  }
+
+  async function resizeGif(file,width,height,options){
+    if(!window.gifuct||!window.GIF)throw new Error('GIF 组件没有加载，请刷新页面后重试');
+    const parsed=window.gifuct.parseGIF(await file.arrayBuffer()),frames=window.gifuct.decompressFrames(parsed,true);if(!frames.length)throw new Error('没有读取到 GIF 帧');
+    const source=document.createElement('canvas'),sourceContext=source.getContext('2d',{willReadFrequently:true});source.width=parsed.lsd.width;source.height=parsed.lsd.height;
+    const output=document.createElement('canvas'),outputContext=output.getContext('2d');output.width=width;output.height=height;
+    const transparent=options.bg!=='white',gif=new window.GIF({workers:2,quality:8,width,height,transparent:transparent?0x00ff01:null,workerScript:getGifWorkerScript()});
+    let previousDisposal=0,previousDimensions=null,restoreImage=null;
+    for(const frame of frames){
+      if(previousDisposal===2&&previousDimensions)sourceContext.clearRect(previousDimensions.left,previousDimensions.top,previousDimensions.width,previousDimensions.height);
+      else if(previousDisposal===3&&restoreImage)sourceContext.putImageData(restoreImage,0,0);
+      const before=frame.disposalType===3?sourceContext.getImageData(0,0,source.width,source.height):null;
+      const patch=document.createElement('canvas'),patchContext=patch.getContext('2d');patch.width=frame.dims.width;patch.height=frame.dims.height;
+      const imageData=patchContext.createImageData(frame.dims.width,frame.dims.height);imageData.data.set(frame.patch);patchContext.putImageData(imageData,0,0);sourceContext.drawImage(patch,frame.dims.left,frame.dims.top);
+      drawFitted(source,outputContext,width,height,{...options,gifMatte:transparent});gif.addFrame(outputContext,{copy:true,delay:frame.delay||100});
+      previousDisposal=frame.disposalType;previousDimensions=frame.dims;restoreImage=before;
+    }
+    return new Promise((resolve,reject)=>{gif.on('finished',resolve);gif.on('abort',()=>reject(new Error('GIF 编码已中止')));gif.render()});
+  }
+
+  window.addEventListener('beforeunload',()=>{imageItems.forEach(item=>{URL.revokeObjectURL(item.sourceUrl);if(item.resultUrl)URL.revokeObjectURL(item.resultUrl)});if(gifWorkerBlobUrl)URL.revokeObjectURL(gifWorkerBlobUrl)});
+</script>
+</body></html>
