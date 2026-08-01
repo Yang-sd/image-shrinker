@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>轻图 · 图片尺寸优化</title>
+  <title>轻图 · 图片与视频处理工具</title>
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="./vendor/gifuct.js"></script>
   <script src="./vendor/gif.js"></script>
@@ -37,31 +37,56 @@
     @media(max-width:900px){.result-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
     @media(max-width:780px){.drop-actions{width:100%}.drop-actions .button{flex:1;justify-content:center}.panel-actions{gap:5px}.result-grid{grid-template-columns:1fr}.results-head{align-items:flex-start;flex-direction:column}.results-actions{width:100%}.results-actions .button{flex:1;justify-content:center}.queue-list{max-height:230px}}
   </style>
+  <style>
+    .product-switch{display:flex;gap:6px;width:max-content;margin:-36px auto 46px;padding:5px;border:1px solid var(--line);border-radius:13px;background:white;box-shadow:0 10px 30px #17202a0a}.product-button{border:0;border-radius:9px;background:transparent;color:var(--muted);padding:11px 22px;display:flex;align-items:center;gap:8px;font:700 14px inherit;cursor:pointer}.product-button.active{background:var(--green);color:white}.product-button svg{width:17px;height:17px}.product-pane.hidden{display:none}
+    .target-size{padding:12px;border:1px solid #d9e6df;border-radius:9px;background:#f5faf7}.target-row{display:grid;grid-template-columns:auto 1fr auto;gap:9px;align-items:center}.target-row input[type=checkbox]{accent-color:var(--green);width:16px;height:16px}.target-row input[type=number]{min-width:0}.target-unit{font-size:12px;color:var(--muted)}
+    .video-hero{grid-template-columns:.9fr 1.1fr}.video-drop{background:#f8f5ff;border-color:#c9bfda}.video-drop .drop-icon{color:#7556a8}.video-drop.drag{background:#eee7fa;border-color:#7556a8}.video-workspace{display:none;grid-template-columns:.95fr 1.05fr;gap:22px}.video-workspace.show{display:grid}.video-preview{height:auto;aspect-ratio:16/9;background:#101418}.video-preview video{width:100%;height:100%;object-fit:contain;background:#101418}.video-empty{color:#aeb7bc;font-size:13px}.video-list{display:grid;gap:7px;max-height:260px;overflow:auto}.video-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;padding:9px;border:1px solid var(--line);border-radius:9px}.video-row.active{border-color:#98c5b1;background:#f2faf6}.video-select{min-width:0;border:0;background:transparent;text-align:left;cursor:pointer}.video-name{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:650;font-size:12px}.video-meta{display:block;color:var(--muted);font-size:10px;margin-top:3px}.video-row-actions{display:flex;gap:3px}.mini-button{width:28px;height:28px;border:0;border-radius:7px;background:transparent;color:var(--muted);display:grid;place-items:center;cursor:pointer}.mini-button:hover{background:#e8f3ed;color:var(--green)}.mini-button.danger:hover{background:#fff0ed;color:#b5483d}.mini-button svg{width:14px;height:14px}.timeline-box{display:grid;gap:10px;padding:13px;border:1px solid var(--line);border-radius:10px;background:#fbfcfb}.timeline-line{display:grid;grid-template-columns:52px 1fr 68px;gap:9px;align-items:center}.timeline-line span{font-size:12px;color:var(--muted)}.timeline-line input[type=range]{width:100%;accent-color:var(--green)}.timeline-line input[type=number]{width:100%;padding:7px;border:1px solid var(--line);border-radius:7px;font:12px inherit}.clip-duration{font-size:11px;color:var(--green);text-align:right}.cover-box{display:grid;grid-template-columns:90px 1fr;gap:12px;align-items:center}.cover-preview{width:90px;aspect-ratio:16/9;border-radius:7px;border:1px solid var(--line);background:#eef1f0;object-fit:cover}.cover-actions{display:flex;gap:7px;flex-wrap:wrap}.small-button{padding:8px 11px;font-size:12px}.inline-options{display:grid;grid-template-columns:1fr 1fr;gap:9px}.video-output{display:none;margin-top:22px}.video-output.show{display:block}.video-result{display:grid;grid-template-columns:180px 1fr auto;gap:18px;align-items:center;padding:18px;border:1px solid var(--line);border-radius:13px;background:white}.video-result video{width:180px;aspect-ratio:16/9;border-radius:8px;background:#101418}.video-result-copy strong{display:block;font-size:14px}.video-result-copy span{display:block;color:var(--muted);font-size:12px;margin-top:4px}.notice{padding:11px 13px;border-radius:9px;background:#fff8ec;color:#74654c;font-size:11px;line-height:1.6}.video-progress{height:6px;background:#e5ebe8;border-radius:5px;overflow:hidden;margin-top:12px}.video-progress div{height:100%;width:0;background:var(--green);transition:width .2s}.cover-download{display:none}.cover-download.show{display:inline-flex}
+    @media(max-width:780px){.product-switch{margin:-24px auto 34px;width:100%}.product-button{flex:1;justify-content:center;padding:10px}.video-workspace.show{grid-template-columns:1fr}.video-result{grid-template-columns:1fr}.video-result video{width:100%}.inline-options{grid-template-columns:1fr}.video-hero{grid-template-columns:1fr}.cover-box{grid-template-columns:1fr}.cover-preview{width:140px}}
+  </style>
 </head>
 <body>
 <main class="shell">
   <header class="top"><div class="brand"><span class="mark"><i data-lucide="scan-line"></i></span>轻图</div><div class="status"><span class="dot"></span>本地处理 · 文件不会上传</div></header>
-  <section class="hero"><div><div class="eyebrow">Image size, made lighter</div><h1>让图片更轻，<br><span class="accent">聊天更自在。</span></h1><p>调整图片的显示尺寸，保留清晰度与 GIF 动画。所有处理都在你的浏览器本地完成。</p></div><div id="drop" class="drop"><div class="drop-icon"><i data-lucide="images"></i></div><h3>拖入图片或文件夹到这里</h3><p>支持 JPG、PNG、WEBP 和 GIF，可一次处理多张</p><div class="drop-actions"><button id="choose" class="button"><i data-lucide="images"></i>选择图片</button><button id="chooseFolder" class="button secondary"><i data-lucide="folder-open"></i>选择文件夹</button></div><input id="file" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple hidden><input id="folder" type="file" accept="image/jpeg,image/png,image/webp,image/gif" webkitdirectory directory multiple hidden><div class="formats">每张最大 50 MB · 文件只在本地处理</div></div></section>
+  <nav class="product-switch" aria-label="文件类型"><button class="product-button active" data-product="image"><i data-lucide="image"></i>图片处理</button><button class="product-button" data-product="video"><i data-lucide="clapperboard"></i>视频处理</button></nav>
+  <div id="imageApp" class="product-pane">
+  <section class="hero"><div><div class="eyebrow">Image size, made lighter</div><h1>让图片更轻，<br><span class="accent">聊天更自在。</span></h1><p>调整图片的显示尺寸，保留清晰度与 GIF 动画。所有处理都在你的浏览器本地完成。</p></div><div id="drop" class="drop"><div class="drop-icon"><i data-lucide="images"></i></div><h3>拖入图片或文件夹到这里</h3><p>支持 JPG、PNG、WEBP 和 GIF，可一次处理多张</p><div class="drop-actions"><button id="choose" class="button"><i data-lucide="images"></i>选择图片</button><button id="chooseFolder" class="button secondary"><i data-lucide="folder-open"></i>选择文件夹</button></div><input id="file" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple hidden><input id="folder" type="file" accept="image/jpeg,image/png,image/webp,image/gif" webkitdirectory directory multiple hidden><div class="formats">每张最大 500 MB · 文件只在本地处理</div></div></section>
   <div class="mode-switch" aria-label="处理模式"><button class="mode-button active" data-mode="resize"><i data-lucide="scan"></i>普通缩放</button><button class="mode-button" data-mode="emoji"><i data-lucide="sticker"></i>聊天工具小表情</button></div>
   <section id="workspace" class="workspace">
     <div class="panel"><div class="panel-head"><div class="panel-head-title"><h2>待处理图片</h2><span id="selectedCount" class="tag">1 张</span></div><div class="panel-actions"><button id="addImages" class="icon-button" title="添加图片" aria-label="添加图片"><i data-lucide="image-plus"></i></button><button id="addFolder" class="icon-button" title="添加文件夹" aria-label="添加文件夹"><i data-lucide="folder-plus"></i></button><button id="clearFiles" class="icon-button" title="清空列表" aria-label="清空列表"><i data-lucide="trash-2"></i></button></div></div><div class="preview"><img id="sourcePreview" alt="当前图片预览"></div><div class="meta"><span id="sourceSize">—</span><span id="sourceWeight">—</span></div><div class="queue"><div class="queue-head"><span>图片列表</span><span id="queueSummary">—</span></div><div id="queueList" class="queue-list"></div></div></div>
     <div class="panel"><div class="panel-head"><h2 id="settingsTitle">缩放设置</h2><span id="ratioTag" class="tag">等比缩放</span></div>
-      <div id="resizeControls" class="controls mode-pane"><div class="control"><label>当前图宽度比例 <b id="ratioValue">60%</b></label><div class="range"><input id="ratio" type="range" min="1" max="100" value="60"><b id="ratioNum">60%</b></div></div><div class="control"><label>统一目标尺寸 <span>像素</span></label><div class="dims"><input id="width" type="number" min="1" max="16384" placeholder="宽度"><input id="height" type="number" min="1" max="16384" placeholder="高度"></div><div class="fit-note">整批图片都会生成相同的宽度和高度</div></div><label class="check"><input id="keep" type="checkbox" checked>按当前预览图锁定宽高比例</label><div class="control"><label>图片适配</label><select id="fit" class="select"><option value="contain" selected>完整显示 · 不裁切</option><option value="cover">铺满画布 · 可能裁切</option><option value="stretch">拉伸到统一尺寸</option></select></div><div class="control"><label>输出格式</label><select id="format" class="select"><option value="auto">自动匹配原格式</option><option value="png">PNG · 无损</option><option value="jpeg">JPG · 更小体积</option><option value="webp">WEBP · 推荐</option></select></div></div>
+      <div id="resizeControls" class="controls mode-pane"><div class="control"><label>当前图宽度比例 <b id="ratioValue">60%</b></label><div class="range"><input id="ratio" type="range" min="1" max="100" value="60"><b id="ratioNum">60%</b></div></div><div class="control"><label>统一目标尺寸 <span>像素</span></label><div class="dims"><input id="width" type="number" min="1" max="16384" placeholder="宽度"><input id="height" type="number" min="1" max="16384" placeholder="高度"></div><div class="fit-note">整批图片都会生成相同的宽度和高度</div></div><label class="check"><input id="keep" type="checkbox" checked>按当前预览图锁定宽高比例</label><div class="control target-size"><label>目标文件大小 <span>每张图片</span></label><div class="target-row"><input id="targetEnabled" type="checkbox"><input id="targetMB" type="number" min="0.05" max="200" step="0.1" value="1" disabled><span class="target-unit">MB 以内</span></div><div class="fit-note">开启后优先保留分辨率和清晰度，自动使用高质量 WEBP/JPG 逼近目标大小。</div></div><div class="control"><label>图片适配</label><select id="fit" class="select"><option value="contain" selected>完整显示 · 不裁切</option><option value="cover">铺满画布 · 可能裁切</option><option value="stretch">拉伸到统一尺寸</option></select></div><div class="control"><label>输出格式</label><select id="format" class="select"><option value="auto">自动匹配原格式</option><option value="png">PNG · 无损</option><option value="jpeg">JPG · 更小体积</option><option value="webp">WEBP · 推荐</option></select></div></div>
       <div id="emojiControls" class="controls mode-pane hidden"><div class="emoji-banner"><i data-lucide="message-circle-heart"></i><span><b>生成可添加到聊天工具的单个表情</b>使用正方形画布包住原图，不裁切内容。添加为表情后，聊天工具会使用表情消息的较小显示方式。</span></div><div class="control"><label>表情画布 <span>推荐 100 × 100</span></label><select id="emojiSize" class="select"><option value="80">80 × 80 px · 更小</option><option value="100" selected>100 × 100 px · 推荐</option><option value="120">120 × 120 px</option><option value="240">240 × 240 px · 更清晰</option></select></div><div class="control"><label>主体大小 <b id="subjectValue">88%</b></label><div class="range"><input id="subjectScale" type="range" min="40" max="100" value="88"><b id="subjectNum">88%</b></div></div><div class="control"><label>画布背景</label><select id="emojiBg" class="select"><option value="transparent">透明背景 · 推荐</option><option value="white">白色背景</option></select></div><div class="control"><label>输出格式</label><select id="emojiFormat" class="select"><option value="gif" selected>GIF · 模拟示例小图</option><option value="png">PNG · 保留更多色彩</option></select></div><div class="steps"><div class="step"><b>1. 下载</b>生成的小表情</div><div class="step"><b>2. 打开聊天工具</b>进入表情面板</div><div class="step"><b>3. 点击“+”</b>添加单个表情</div></div></div>
       <button id="process" class="button process"><i data-lucide="wand-sparkles"></i><span id="processLabel">生成缩小图片</span></button><div class="tip"><i data-lucide="shield-check"></i><span id="tipText">GIF 会保留动画；静态图片按原格式导出，像素内容不会被裁切。</span></div>
     </div>
   </section>
   <section id="output" class="batch-output"><div class="results-head"><div class="results-summary"><strong id="outputTitle">图片已准备好</strong><span id="outputMeta">—</span></div><div class="results-actions"><button id="downloadAll" class="button"><i data-lucide="file-archive"></i>下载全部 ZIP</button></div></div><div id="progressTrack" class="progress-track"><div id="progressBar" class="progress-bar"></div></div><div id="resultGrid" class="result-grid"></div><div class="batch-hint">可以单独下载某一张，也可以将全部成功结果打包下载。</div></section>
-  <div class="chat-note"><i data-lucide="message-circle-more"></i><span id="chatNote"><b>关于聊天窗口的显示：</b>普通图片由聊天工具决定气泡大小。若要稳定显示得更小，请切换到“聊天工具小表情”并从表情面板发送。</span></div><footer>轻图 · 你的图片只属于你</footer>
+  <div class="chat-note"><i data-lucide="message-circle-more"></i><span id="chatNote"><b>关于聊天窗口的显示：</b>普通图片由聊天工具决定气泡大小。若要稳定显示得更小，请切换到“聊天工具小表情”并从表情面板发送。</span></div>
+  </div>
+  <div id="videoApp" class="product-pane hidden">
+    <section class="hero video-hero"><div><div class="eyebrow">Video studio, in your browser</div><h1>剪辑、拼接、压缩，<br><span class="accent">一次完成。</span></h1><p>拖动时间轴裁剪片段，按列表顺序拼接视频，设置封面并压缩到目标体积。文件始终留在本机。</p></div><div id="videoDrop" class="drop video-drop"><div class="drop-icon"><i data-lucide="clapperboard"></i></div><h3>拖入一个或多个视频</h3><p>支持浏览器可播放的 MP4、MOV、WebM 等格式</p><div class="drop-actions"><button id="chooseVideos" class="button"><i data-lucide="video"></i>选择视频</button></div><input id="videoFile" type="file" accept="video/*" multiple hidden><div class="formats">建议单个不超过 2 GB · 输出为 WebM · 全程本地处理</div></div></section>
+    <section id="videoWorkspace" class="video-workspace">
+      <div class="panel"><div class="panel-head"><div class="panel-head-title"><h2>视频素材</h2><span id="videoCount" class="tag">0 段</span></div><div class="panel-actions"><button id="addVideos" class="icon-button" title="添加视频"><i data-lucide="video"></i></button><button id="clearVideos" class="icon-button" title="清空视频"><i data-lucide="trash-2"></i></button></div></div><div class="preview video-preview"><video id="videoPreview" controls playsinline></video><span id="videoEmpty" class="video-empty">选择视频后可预览和裁剪</span></div><div class="meta"><span id="videoDimensions">—</span><span id="videoWeight">—</span></div><div class="queue"><div class="queue-head"><span>拼接顺序</span><span>可上下调整</span></div><div id="videoList" class="video-list"></div></div></div>
+      <div class="panel"><div class="panel-head"><h2>剪辑与输出</h2><span class="tag">WebM</span></div><div class="controls"><div class="timeline-box"><div class="timeline-line"><span>开始</span><input id="clipStart" type="range" min="0" max="0" step="0.01" value="0"><input id="clipStartNum" type="number" min="0" step="0.01" value="0"></div><div class="timeline-line"><span>结束</span><input id="clipEnd" type="range" min="0" max="0" step="0.01" value="0"><input id="clipEndNum" type="number" min="0" step="0.01" value="0"></div><div id="clipDuration" class="clip-duration">片段 0 秒</div></div><div class="control"><label>处理方式</label><select id="videoOperation" class="select"><option value="current">裁剪当前视频</option><option value="join">按列表顺序拼接全部片段</option></select></div><div class="control"><label>输出清晰度</label><select id="videoResolution" class="select"><option value="source">接近原始尺寸</option><option value="1080">1080p</option><option value="720" selected>720p · 推荐</option><option value="480">480p · 更小</option></select></div><div class="control target-size"><label>目标文件大小 <span>近似值</span></label><div class="target-row"><input id="videoTargetEnabled" type="checkbox" checked><input id="videoTargetMB" type="number" min="1" max="2048" step="1" value="50"><span class="target-unit">MB 左右</span></div><div class="fit-note">根据总时长自动计算码率；不同浏览器编码器可能产生约 ±15% 偏差。</div></div><div class="control"><label>视频封面</label><div class="cover-box"><img id="coverPreview" class="cover-preview" alt="视频封面"><div><div class="cover-actions"><button id="captureCover" class="button secondary small-button"><i data-lucide="camera"></i>截取当前帧</button><button id="chooseCover" class="button secondary small-button"><i data-lucide="image-plus"></i>上传图片</button><button id="downloadCover" class="button secondary small-button cover-download"><i data-lucide="download"></i>下载封面</button></div><input id="coverFile" type="file" accept="image/*" hidden></div></div></div><div class="inline-options"><div class="control"><label>封面样式</label><select id="coverFit" class="select"><option value="cover">铺满画面</option><option value="contain">完整显示</option></select></div><div class="control"><label>片头封面时长</label><select id="coverDuration" class="select"><option value="0">不加入视频</option><option value="1" selected>1 秒</option><option value="2">2 秒</option><option value="3">3 秒</option></select></div></div><button id="processVideo" class="button process"><i data-lucide="wand-sparkles"></i><span id="videoProcessLabel">开始处理视频</span></button><div class="notice">视频会按实际播放速度在本地重新编码，例如 1 分钟素材约需 1 分钟。为保证浏览器兼容，输出格式统一为 WebM。</div></div></div>
+    </section>
+    <section id="videoOutput" class="video-output"><div class="video-progress"><div id="videoProgressBar"></div></div><div class="video-result"><video id="resultVideo" controls playsinline></video><div class="video-result-copy"><strong id="videoOutputTitle">视频已准备好</strong><span id="videoOutputMeta">—</span></div><button id="downloadVideo" class="button"><i data-lucide="download"></i>下载视频</button></div></section>
+  </div>
+  <footer>轻图 · 你的图片和视频只属于你</footer>
 </main>
 <script>
   const $=id=>document.getElementById(id);
-  const MAX_FILE_SIZE=50*1024*1024;
+  const MAX_FILE_SIZE=500*1024*1024;
   const SUPPORTED_TYPES=new Set(['image/jpeg','image/png','image/webp','image/gif']);
   let imageItems=[],activeId=null,mode='resize',processing=false,itemSequence=0,gifWorkerBlobUrl=null;
   const refreshIcons=()=>window.lucide&&window.lucide.createIcons();
   const getGifWorkerScript=()=>gifWorkerBlobUrl||(gifWorkerBlobUrl=URL.createObjectURL(new Blob([window.GIF_WORKER_SOURCE],{type:'text/javascript'})));
   refreshIcons();
+
+  document.querySelectorAll('.product-button').forEach(button=>button.onclick=()=>{
+    if(processing||videoProcessing)return;
+    document.querySelectorAll('.product-button').forEach(item=>item.classList.toggle('active',item===button));
+    $('imageApp').classList.toggle('hidden',button.dataset.product!=='image');
+    $('videoApp').classList.toggle('hidden',button.dataset.product!=='video');
+  });
 
   $('choose').onclick=()=>$('file').click();
   $('chooseFolder').onclick=()=>$('folder').click();
@@ -144,7 +169,7 @@
       }catch(error){if(sourceUrl)URL.revokeObjectURL(sourceUrl);unreadable++}
     }
     if(!additions.length){
-      const reason=oversized?'图片超过 50 MB，无法加入。':duplicate?'这些图片已经在列表中。':'没有识别到可处理的 JPG、PNG、WEBP 或 GIF 图片。';
+      const reason=oversized?'图片超过 500 MB，无法加入。':duplicate?'这些图片已经在列表中。':'没有识别到可处理的 JPG、PNG、WEBP 或 GIF 图片。';
       alert(reason);
       return;
     }
@@ -263,6 +288,8 @@
   $('height').oninput=()=>{const item=activeItem();if(!item)return;if($('keep').checked)$('width').value=Math.max(1,Math.round((+$('height').value||1)*item.width/item.height));syncRatioFromTarget();invalidateResults()};
   $('keep').onchange=()=>{const item=activeItem();if(item&&$('keep').checked)$('height').value=Math.max(1,Math.round((+$('width').value||1)*item.height/item.width));syncRatioFromTarget();invalidateResults()};
   $('subjectScale').oninput=event=>{$('subjectValue').textContent=event.target.value+'%';$('subjectNum').textContent=event.target.value+'%';invalidateResults()};
+  $('targetEnabled').onchange=()=>{$('targetMB').disabled=!$('targetEnabled').checked;invalidateResults()};
+  $('targetMB').oninput=invalidateResults;
   ['fit','format','emojiSize','emojiBg','emojiFormat'].forEach(id=>$(id).addEventListener('change',invalidateResults));
 
   $('process').onclick=processAll;
@@ -279,7 +306,7 @@
       await new Promise(resolve=>requestAnimationFrame(resolve));
       try{
         const result=await processItem(item,config);
-        item.resultBlob=result.blob;item.resultUrl=URL.createObjectURL(result.blob);item.resultWidth=config.width;item.resultHeight=config.height;
+        item.resultBlob=result.blob;item.resultUrl=URL.createObjectURL(result.blob);item.resultWidth=result.width||config.width;item.resultHeight=result.height||config.height;
         const stem=item.file.name.replace(/\.[^.]+$/,'');
         item.resultName=(config.emoji?'聊天工具小表情-':'轻图-')+stem+'.'+result.extension;
         item.status='done';
@@ -297,7 +324,9 @@
     const width=emoji?size:Math.round(+$('width').value),height=emoji?size:Math.round(+$('height').value);
     if(!width||!height||width<1||height<1){alert('请输入有效的目标宽度和高度');return null}
     if(width>16384||height>16384){alert('目标尺寸不能超过 16384 × 16384 px');return null}
-    return{emoji,width,height,scale:+$('subjectScale').value/100,bg:$('emojiBg').value,emojiFormat:$('emojiFormat').value,fit:$('fit').value,format:$('format').value};
+    const targetBytes=$('targetEnabled').checked?Math.round((+$('targetMB').value||0)*1024*1024):0;
+    if($('targetEnabled').checked&&targetBytes<50*1024){alert('目标文件大小不能低于 0.05 MB');return null}
+    return{emoji,width,height,scale:+$('subjectScale').value/100,bg:$('emojiBg').value,emojiFormat:$('emojiFormat').value,fit:$('fit').value,format:$('format').value,targetBytes};
   }
 
   async function processItem(item,config){
@@ -307,11 +336,11 @@
       else if(config.emojiFormat==='gif'){blob=await makeStaticGif(item.file,config.width,config.scale,config.bg);extension='gif'}
       else{blob=await makeStaticEmoji(item.file,config.width,config.scale,config.bg);extension='png'}
     }else if(item.actualType==='image/gif'){
-      blob=await resizeGif(item.file,config.width,config.height,{fit:config.fit,scale:1,bg:'transparent'});extension='gif';
+      const resized=await resizeGifToTarget(item.file,config.width,config.height,{fit:config.fit,scale:1,bg:'transparent'},config.targetBytes);blob=resized.blob;extension='gif';return{blob,extension,width:resized.width,height:resized.height};
     }else{
-      blob=await resizeStatic(item,config.width,config.height,config.fit,config.format);extension=extensionForType(blob.type);
+      const resized=await resizeStaticToTarget(item,config.width,config.height,config.fit,config.format,config.targetBytes);blob=resized.blob;extension=extensionForType(blob.type);return{blob,extension,width:resized.width,height:resized.height};
     }
-    return{blob,extension};
+    return{blob,extension,width:config.width,height:config.height};
   }
 
   function setBusy(busy){
@@ -326,7 +355,7 @@
     const outputBytes=successful.reduce((total,item)=>total+item.resultBlob.size,0);
     $('progressTrack').classList.remove('show');
     $('outputTitle').textContent=failed?successful.length+' 张完成，'+failed+' 张失败':successful.length+' 张图片已准备好';
-    $('outputMeta').textContent=config.width+' × '+config.height+' px · 输出合计 '+fmt(outputBytes);
+    $('outputMeta').textContent=(config.targetBytes?'单张目标 ≤ '+fmt(config.targetBytes):config.width+' × '+config.height+' px')+' · 输出合计 '+fmt(outputBytes);
     $('downloadAll').disabled=!successful.length;
     $('downloadAll').innerHTML='<i data-lucide="file-archive"></i>下载全部 ZIP';
     renderResults();refreshIcons();
@@ -385,6 +414,28 @@
     return canvasBlob(canvas,type,.94);
   }
 
+  async function resizeStaticToTarget(item,width,height,fit,selectedFormat,targetBytes){
+    if(!targetBytes)return{blob:await resizeStatic(item,width,height,fit,selectedFormat),width,height};
+    const image=await imageFromFile(item.file),type=selectedFormat==='jpeg'?'image/jpeg':selectedFormat==='webp'?'image/webp':item.actualType==='image/jpeg'?'image/jpeg':'image/webp';
+    let outputWidth=width,outputHeight=height,best=null;
+    for(let scalePass=0;scalePass<8;scalePass++){
+      const canvas=document.createElement('canvas'),context=canvas.getContext('2d');canvas.width=outputWidth;canvas.height=outputHeight;
+      drawFitted(image,context,outputWidth,outputHeight,{fit,scale:1,bg:type==='image/jpeg'?'white':'transparent'});
+      let low=.25,high=.98,smallest=null;
+      for(let pass=0;pass<8;pass++){
+        const quality=(low+high)/2,blob=await canvasBlob(canvas,type,quality);
+        if(!smallest||blob.size<smallest.size)smallest=blob;
+        if(blob.size<=targetBytes){best={blob,width:outputWidth,height:outputHeight};low=quality}else high=quality;
+      }
+      if(best)return best;
+      if(smallest&&smallest.size<=targetBytes)return{blob:smallest,width:outputWidth,height:outputHeight};
+      const ratio=Math.max(.55,Math.min(.9,Math.sqrt(targetBytes/(smallest?smallest.size:targetBytes*2))*.94));
+      outputWidth=Math.max(64,Math.round(outputWidth*ratio));outputHeight=Math.max(64,Math.round(outputHeight*ratio));
+    }
+    const canvas=document.createElement('canvas'),context=canvas.getContext('2d');canvas.width=outputWidth;canvas.height=outputHeight;drawFitted(image,context,outputWidth,outputHeight,{fit,scale:1,bg:type==='image/jpeg'?'white':'transparent'});
+    return{blob:await canvasBlob(canvas,type,.2),width:outputWidth,height:outputHeight};
+  }
+
   async function makeStaticEmoji(file,size,scale,bg){
     const image=await imageFromFile(file),canvas=document.createElement('canvas'),context=canvas.getContext('2d');canvas.width=size;canvas.height=size;drawFitted(image,context,size,size,{fit:'contain',scale,bg});return canvasBlob(canvas,'image/png');
   }
@@ -396,9 +447,9 @@
   }
 
   function drawFitted(source,context,width,height,options){
-    context.clearRect(0,0,width,height);if(options.gifMatte)context.fillStyle='#00ff01';else if(options.bg==='white')context.fillStyle='#fff';else context.fillStyle='rgba(0,0,0,0)';context.fillRect(0,0,width,height);context.imageSmoothingEnabled=true;context.imageSmoothingQuality='high';
+    context.clearRect(0,0,width,height);if(options.gifMatte)context.fillStyle='#00ff01';else if(options.bg==='white')context.fillStyle='#fff';else if(options.bg&&options.bg!=='transparent')context.fillStyle=options.bg;else context.fillStyle='rgba(0,0,0,0)';context.fillRect(0,0,width,height);context.imageSmoothingEnabled=true;context.imageSmoothingQuality='high';
     if(options.fit==='stretch'){context.drawImage(source,0,0,width,height);return}
-    const sourceWidth=source.naturalWidth||source.width,sourceHeight=source.naturalHeight||source.height;
+    const sourceWidth=source.videoWidth||source.naturalWidth||source.width,sourceHeight=source.videoHeight||source.naturalHeight||source.height;
     const maxWidth=width*options.scale,maxHeight=height*options.scale,ratio=options.fit==='cover'?Math.max(maxWidth/sourceWidth,maxHeight/sourceHeight):Math.min(maxWidth/sourceWidth,maxHeight/sourceHeight);
     const drawWidth=Math.max(1,Math.round(sourceWidth*ratio)),drawHeight=Math.max(1,Math.round(sourceHeight*ratio));context.drawImage(source,Math.round((width-drawWidth)/2),Math.round((height-drawHeight)/2),drawWidth,drawHeight);
   }
@@ -422,6 +473,109 @@
     return new Promise((resolve,reject)=>{gif.on('finished',resolve);gif.on('abort',()=>reject(new Error('GIF 编码已中止')));gif.render()});
   }
 
-  window.addEventListener('beforeunload',()=>{imageItems.forEach(item=>{URL.revokeObjectURL(item.sourceUrl);if(item.resultUrl)URL.revokeObjectURL(item.resultUrl)});if(gifWorkerBlobUrl)URL.revokeObjectURL(gifWorkerBlobUrl)});
+  async function resizeGifToTarget(file,width,height,options,targetBytes){
+    let outputWidth=width,outputHeight=height,blob=await resizeGif(file,outputWidth,outputHeight,options);
+    if(!targetBytes||blob.size<=targetBytes)return{blob,width:outputWidth,height:outputHeight};
+    for(let pass=0;pass<6;pass++){
+      const ratio=Math.max(.55,Math.min(.88,Math.sqrt(targetBytes/blob.size)*.92));
+      outputWidth=Math.max(48,Math.round(outputWidth*ratio));outputHeight=Math.max(48,Math.round(outputHeight*ratio));
+      blob=await resizeGif(file,outputWidth,outputHeight,options);
+      if(blob.size<=targetBytes)break;
+    }
+    return{blob,width:outputWidth,height:outputHeight};
+  }
+
+  let videoItems=[],activeVideoId=null,videoSequence=0,videoProcessing=false,videoResultBlob=null,videoResultUrl=null,coverBlob=null,coverUrl=null;
+  const videoDrop=$('videoDrop'),videoPreview=$('videoPreview');
+  $('chooseVideos').onclick=$('addVideos').onclick=()=>$('videoFile').click();
+  $('videoFile').onchange=async event=>{await addVideoFiles([...event.target.files]);event.target.value=''};
+  $('clearVideos').onclick=clearVideos;
+  ['dragenter','dragover'].forEach(type=>videoDrop.addEventListener(type,event=>{event.preventDefault();videoDrop.classList.add('drag')}));
+  ['dragleave','drop'].forEach(type=>videoDrop.addEventListener(type,event=>{event.preventDefault();videoDrop.classList.remove('drag')}));
+  videoDrop.addEventListener('drop',event=>{if(videoProcessing)return;addVideoFiles([...event.dataTransfer.files])});
+
+  async function addVideoFiles(files){
+    const accepted=files.filter(file=>file.type.startsWith('video/')||/\.(mp4|mov|m4v|webm|ogv)$/i.test(file.name));
+    if(!accepted.length){alert('没有识别到浏览器支持的视频文件');return}
+    for(const file of accepted){
+      const url=URL.createObjectURL(file);
+      try{
+        const metadata=await readVideoMetadata(url);
+        videoItems.push({id:'video-'+(++videoSequence),file,url,width:metadata.width,height:metadata.height,duration:metadata.duration,start:0,end:metadata.duration});
+      }catch(error){URL.revokeObjectURL(url);alert(file.name+' 无法读取，可能是浏览器不支持该编码格式。')}
+    }
+    if(!videoItems.length)return;
+    activeVideoId=activeVideoId||videoItems[0].id;$('videoWorkspace').classList.add('show');renderVideoWorkspace();clearVideoResult();
+  }
+
+  function readVideoMetadata(url){return new Promise((resolve,reject)=>{const video=document.createElement('video');video.preload='metadata';video.onloadedmetadata=()=>resolve({duration:video.duration,width:video.videoWidth,height:video.videoHeight});video.onerror=()=>reject(new Error('视频解码失败'));video.src=url})}
+  function activeVideo(){return videoItems.find(item=>item.id===activeVideoId)||videoItems[0]}
+  function renderVideoWorkspace(){
+    const current=activeVideo();if(!current){$('videoWorkspace').classList.remove('show');return}
+    $('videoCount').textContent=videoItems.length+' 段';$('videoEmpty').style.display='none';
+    if(videoPreview.dataset.itemId!==current.id){videoPreview.src=current.url;videoPreview.dataset.itemId=current.id;videoPreview.currentTime=current.start}
+    $('videoDimensions').textContent=current.width+' × '+current.height+' · '+formatTime(current.duration);$('videoWeight').textContent=fmt(current.file.size);
+    ['clipStart','clipEnd'].forEach(id=>$(id).max=current.duration);$('clipStart').value=current.start;$('clipEnd').value=current.end;$('clipStartNum').max=current.duration;$('clipEndNum').max=current.duration;$('clipStartNum').value=current.start.toFixed(2);$('clipEndNum').value=current.end.toFixed(2);updateClipDuration();renderVideoList();
+  }
+  function renderVideoList(){
+    const list=$('videoList');list.replaceChildren();
+    videoItems.forEach((item,index)=>{const row=document.createElement('div');row.className='video-row'+(item.id===activeVideoId?' active':'');const select=document.createElement('button');select.className='video-select';select.innerHTML='<span class="video-name"></span><span class="video-meta"></span>';select.querySelector('.video-name').textContent=(index+1)+'. '+item.file.name;select.querySelector('.video-meta').textContent=formatTime(item.start)+' → '+formatTime(item.end)+' · '+fmt(item.file.size);select.onclick=()=>{activeVideoId=item.id;renderVideoWorkspace()};const actions=document.createElement('div');actions.className='video-row-actions';[['arrow-up',-1],['arrow-down',1]].forEach(([icon,offset])=>{const button=document.createElement('button');button.className='mini-button';button.innerHTML='<i data-lucide="'+icon+'"></i>';button.disabled=index+offset<0||index+offset>=videoItems.length;button.onclick=()=>moveVideo(index,index+offset);actions.append(button)});const remove=document.createElement('button');remove.className='mini-button danger';remove.innerHTML='<i data-lucide="x"></i>';remove.onclick=()=>removeVideo(item.id);actions.append(remove);row.append(select,actions);list.append(row)});refreshIcons();
+  }
+  function moveVideo(from,to){const [item]=videoItems.splice(from,1);videoItems.splice(to,0,item);renderVideoList();clearVideoResult()}
+  function removeVideo(id){const index=videoItems.findIndex(item=>item.id===id);if(index<0)return;URL.revokeObjectURL(videoItems[index].url);videoItems.splice(index,1);if(activeVideoId===id)activeVideoId=videoItems[Math.min(index,videoItems.length-1)]?.id||null;renderVideoWorkspace();clearVideoResult()}
+  function clearVideos(){if(videoProcessing)return;videoPreview.pause();videoPreview.removeAttribute('src');videoPreview.load();videoPreview.dataset.itemId='';videoItems.forEach(item=>URL.revokeObjectURL(item.url));videoItems=[];activeVideoId=null;$('videoList').replaceChildren();$('videoWorkspace').classList.remove('show');$('videoEmpty').style.display='block';clearVideoResult()}
+  function setClip(which,value){const item=activeVideo();if(!item)return;value=Math.max(0,Math.min(item.duration,+value||0));if(which==='start')item.start=Math.min(value,item.end-.05);else item.end=Math.max(value,item.start+.05);$('clipStart').value=item.start;$('clipEnd').value=item.end;$('clipStartNum').value=item.start.toFixed(2);$('clipEndNum').value=item.end.toFixed(2);videoPreview.currentTime=which==='start'?item.start:item.end;updateClipDuration();renderVideoList();clearVideoResult()}
+  $('clipStart').oninput=event=>setClip('start',event.target.value);$('clipEnd').oninput=event=>setClip('end',event.target.value);$('clipStartNum').oninput=event=>setClip('start',event.target.value);$('clipEndNum').oninput=event=>setClip('end',event.target.value);
+  function updateClipDuration(){const item=activeVideo();$('clipDuration').textContent=item?'片段 '+formatTime(item.end-item.start):'片段 0 秒'}
+  function formatTime(seconds){if(!Number.isFinite(seconds))return'00:00';const minutes=Math.floor(seconds/60),rest=seconds-minutes*60;return String(minutes).padStart(2,'0')+':'+rest.toFixed(2).padStart(5,'0')}
+
+  $('captureCover').onclick=async()=>{const item=activeVideo();if(!item)return;try{coverBlob=await captureVideoFrame(videoPreview,item.width,item.height);setCoverUrl(coverBlob)}catch(error){alert('截取封面失败：'+error.message)}};
+  $('chooseCover').onclick=()=>$('coverFile').click();$('coverFile').onchange=event=>{const file=event.target.files[0];if(file){coverBlob=file;setCoverUrl(file)}event.target.value=''};
+  function setCoverUrl(blob){if(coverUrl)URL.revokeObjectURL(coverUrl);coverUrl=URL.createObjectURL(blob);$('coverPreview').src=coverUrl;$('downloadCover').classList.add('show');refreshIcons()}
+  $('downloadCover').onclick=()=>coverBlob&&downloadBlob(coverBlob,'轻图-视频封面.'+(coverBlob.type==='image/jpeg'?'jpg':'png'));
+  function captureVideoFrame(video,width,height){return new Promise((resolve,reject)=>{if(!video.videoWidth){reject(new Error('请等待视频预览加载完成'));return}const canvas=document.createElement('canvas'),context=canvas.getContext('2d');canvas.width=width;canvas.height=height;context.drawImage(video,0,0,width,height);canvas.toBlob(blob=>blob?resolve(blob):reject(new Error('无法生成封面')),'image/jpeg',.92)})}
+
+  $('processVideo').onclick=processVideo;
+  async function processVideo(){
+    if(videoProcessing||!videoItems.length)return;
+    if(!window.MediaRecorder||!HTMLCanvasElement.prototype.captureStream){alert('当前浏览器不支持本地视频编码，请使用最新版 Chrome 或 Edge。');return}
+    const clips=$('videoOperation').value==='join'?videoItems:[activeVideo()],coverSeconds=coverBlob?+$('coverDuration').value:0,totalDuration=clips.reduce((sum,item)=>sum+item.end-item.start,0)+coverSeconds;
+    if(totalDuration<=0){alert('请选择有效的视频片段');return}
+    videoProcessing=true;setVideoBusy(true);clearVideoResult();$('videoOutput').classList.add('show');$('videoOutputTitle').textContent='正在处理视频…';$('videoOutputMeta').textContent='请保持页面打开，视频正在按实际时长编码。';
+    try{
+      const outputSize=resolveVideoSize(clips[0]),targetBytes=$('videoTargetEnabled').checked?(+$('videoTargetMB').value||0)*1024*1024:0,videoBitsPerSecond=resolveVideoBitrate(totalDuration,targetBytes,outputSize),result=await renderVideoClips(clips,outputSize,videoBitsPerSecond,coverSeconds,totalDuration);
+      videoResultBlob=result;videoResultUrl=URL.createObjectURL(result);$('resultVideo').src=videoResultUrl;$('videoOutputTitle').textContent='视频已准备好';$('videoOutputMeta').textContent=outputSize.width+' × '+outputSize.height+' · '+formatTime(totalDuration)+' · '+fmt(result.size);$('videoProgressBar').style.width='100%';
+    }catch(error){console.error(error);$('videoOutputTitle').textContent='处理失败';$('videoOutputMeta').textContent=error.message||'浏览器无法完成视频编码';alert('视频处理失败：'+(error.message||'请重试'))}
+    videoProcessing=false;setVideoBusy(false);
+  }
+  function resolveVideoSize(item){const selected=$('videoResolution').value;if(selected==='source')return evenSize(item.width,item.height,1920);const maxHeight=+selected,scale=Math.min(1,maxHeight/item.height);return evenSize(item.width*scale,item.height*scale,1920)}
+  function evenSize(width,height,maxWidth){const scale=Math.min(1,maxWidth/width);return{width:Math.max(2,Math.round(width*scale/2)*2),height:Math.max(2,Math.round(height*scale/2)*2)}}
+  function resolveVideoBitrate(duration,targetBytes,size){if(targetBytes){const totalBits=targetBytes*8*.9,audioBits=duration*96000;return Math.max(250000,Math.floor((totalBits-audioBits)/duration))}return Math.max(700000,Math.min(8000000,Math.round(size.width*size.height*3.2)))}
+  function supportedRecorderType(){return['video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'].find(type=>MediaRecorder.isTypeSupported(type))||''}
+  async function renderVideoClips(clips,size,videoBitsPerSecond,coverSeconds,totalDuration){
+    const canvas=document.createElement('canvas'),context=canvas.getContext('2d');canvas.width=size.width;canvas.height=size.height;const canvasStream=canvas.captureStream(30),audioContext=new AudioContext(),audioDestination=audioContext.createMediaStreamDestination(),stream=new MediaStream([...canvasStream.getVideoTracks(),...audioDestination.stream.getAudioTracks()]),mimeType=supportedRecorderType(),recorder=new MediaRecorder(stream,{mimeType,videoBitsPerSecond,audioBitsPerSecond:96000}),chunks=[];
+    recorder.ondataavailable=event=>{if(event.data.size)chunks.push(event.data)};const stopped=new Promise((resolve,reject)=>{recorder.onstop=resolve;recorder.onerror=()=>reject(recorder.error||new Error('编码器异常'))});recorder.start(1000);
+    try{
+      let completed=0;
+      if(coverSeconds>0&&coverBlob){const image=await imageFromFile(coverBlob);await renderStillFrame(image,context,size,coverSeconds,completed,totalDuration);completed+=coverSeconds}
+      for(const item of clips){await renderClip(item,context,size,audioContext,audioDestination,completed,totalDuration);completed+=item.end-item.start}
+      recorder.stop();await stopped;return new Blob(chunks,{type:mimeType||'video/webm'});
+    }finally{canvasStream.getTracks().forEach(track=>track.stop());audioDestination.stream.getTracks().forEach(track=>track.stop());await audioContext.close()}
+  }
+  async function renderStillFrame(image,context,size,duration,completed,total){drawFitted(image,context,size.width,size.height,{fit:$('coverFit').value,scale:1,bg:'black'});const started=performance.now();while((performance.now()-started)/1000<duration){const elapsed=(performance.now()-started)/1000;$('videoProgressBar').style.width=Math.min(99,(completed+elapsed)/total*100)+'%';await nextFrame()}}
+  async function renderClip(item,context,size,audioContext,audioDestination,completed,total){
+    const video=document.createElement('video');video.src=item.url;video.preload='auto';video.playsInline=true;video.muted=false;await waitEvent(video,'loadedmetadata');if(video.readyState<2)await waitEvent(video,'loadeddata');await seekVideo(video,item.start);const source=audioContext.createMediaElementSource(video);source.connect(audioDestination);await audioContext.resume();await video.play();
+    while(video.currentTime<item.end&&!video.ended){drawFitted(video,context,size.width,size.height,{fit:'contain',scale:1,bg:'black'});$('videoProgressBar').style.width=Math.min(99,(completed+video.currentTime-item.start)/total*100)+'%';await nextFrame()}
+    video.pause();source.disconnect();
+  }
+  function waitEvent(target,event){return new Promise((resolve,reject)=>{const done=()=>{cleanup();resolve()},failed=()=>{cleanup();reject(new Error('视频加载或解码失败'))},cleanup=()=>{target.removeEventListener(event,done);target.removeEventListener('error',failed)};target.addEventListener(event,done,{once:true});target.addEventListener('error',failed,{once:true})})}
+  function seekVideo(video,time){if(Math.abs(video.currentTime-time)<.01)return Promise.resolve();const pending=waitEvent(video,'seeked');video.currentTime=time;return pending}
+  function nextFrame(){return new Promise(resolve=>requestAnimationFrame(resolve))}
+  function setVideoBusy(busy){['chooseVideos','addVideos','clearVideos','processVideo','captureCover','chooseCover'].forEach(id=>$(id).disabled=busy);document.querySelectorAll('.product-button').forEach(button=>button.disabled=busy);$('videoProcessLabel').textContent=busy?'正在处理，请稍候…':'开始处理视频'}
+  function clearVideoResult(){if(videoResultUrl)URL.revokeObjectURL(videoResultUrl);videoResultBlob=null;videoResultUrl=null;$('resultVideo').removeAttribute('src');$('videoOutput').classList.remove('show');$('videoProgressBar').style.width='0%'}
+  $('downloadVideo').onclick=()=>videoResultBlob&&downloadBlob(videoResultBlob,'轻图-处理后视频.webm');
+  ['videoOperation','videoResolution','videoTargetEnabled','videoTargetMB','coverDuration','coverFit'].forEach(id=>$(id).addEventListener('change',clearVideoResult));
+
+  window.addEventListener('beforeunload',()=>{imageItems.forEach(item=>{URL.revokeObjectURL(item.sourceUrl);if(item.resultUrl)URL.revokeObjectURL(item.resultUrl)});videoItems.forEach(item=>URL.revokeObjectURL(item.url));[gifWorkerBlobUrl,videoResultUrl,coverUrl].filter(Boolean).forEach(url=>URL.revokeObjectURL(url))});
 </script>
 </body></html>
